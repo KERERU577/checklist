@@ -1,9 +1,9 @@
-index.html
+<!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>表形式チェックリスト</title>
+  <title>表形式チェックリスト（20行）</title>
   <style>
     body {
       font-family: sans-serif;
@@ -26,10 +26,6 @@ index.html
     th {
       background-color: #f0f0f0;
     }
-    input[type="text"] {
-      width: 90%;
-      padding: 5px;
-    }
     .controls {
       margin-top: 20px;
     }
@@ -39,7 +35,7 @@ index.html
   </style>
 </head>
 <body>
-  <h1>📊 表形式チェックリスト</h1>
+  <h1>📊 表形式チェックリスト（20行）</h1>
 
   <table id="taskTable">
     <thead>
@@ -51,8 +47,7 @@ index.html
         <th>削除</th>
       </tr>
     </thead>
-    <tbody id="taskBody">
-    </tbody>
+    <tbody id="taskBody"></tbody>
   </table>
 
   <div class="controls">
@@ -75,15 +70,15 @@ index.html
       if (saved) {
         taskBody.innerHTML = saved;
         restoreEvents();
+      } else {
+        // 最初に20行生成
+        for (let i = 0; i < 20; i++) {
+          createRow("", "");
+        }
       }
     }
 
-    function addTask() {
-      const task = taskInput.value.trim();
-      const memo = memoInput.value.trim();
-      if (!task) return;
-
-      const id = "task-" + Date.now();
+    function createRow(task, memo) {
       const row = document.createElement("tr");
       row.innerHTML = `
         <td><input type="checkbox" onchange="saveTasks()"></td>
@@ -93,6 +88,13 @@ index.html
         <td><button onclick="deleteTask(this)">削除</button></td>
       `;
       taskBody.appendChild(row);
+    }
+
+    function addTask() {
+      const task = taskInput.value.trim();
+      const memo = memoInput.value.trim();
+      if (!task) return;
+      createRow(task, memo);
       taskInput.value = "";
       memoInput.value = "";
       saveTasks();
