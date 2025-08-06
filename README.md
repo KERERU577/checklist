@@ -1,11 +1,11 @@
 <div class="grid">
   <div class="card">
     <div class="icon">☑️</div>
-    <div class="title">朝ごはん</div>
+    <div class="title">レオレウス</div>
   </div>
   <div class="card notdone">
     <div class="icon">⬜</div>
-    <div class="title">メール確認</div>
+    <div class="title">バーラハーラ</div>
   </div>
   <!-- 追加カード -->
 </div>.grid {
