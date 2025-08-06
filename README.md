@@ -14,12 +14,13 @@
     th { background-color: #eee; }
     td[contenteditable]:focus { outline: 2px dashed #4CAF50; }
     input[type="checkbox"] { width:20px;height:20px; accent-color:#4CAF50; }
+    select { width: 80px; }
     .striped:nth-child(6n+1),
     .striped:nth-child(6n+2),
     .striped:nth-child(6n+3),
     .striped:nth-child(6n+4),
     .striped:nth-child(6n+5),
-    .striped:nth-child(6n+6) { /* apply at row group-level */
+    .striped:nth-child(6n+6) {
       background-color: #fdfdfd;
     }
     .striped:nth-child(6n+7),
@@ -44,7 +45,29 @@
 
     <table id="checklist">
       <thead>
-        <tr><th>モンスター名</th><th>狩猟</th><th>☑</th><th>捕獲</th><th>☑</th></tr>
+        <tr>
+          <th>モンスター名</th>
+          <th>
+            狩猟数<br />
+            <select id="huntGoal" onchange="updateGoal('hunt')">
+              <option value="0">0頭</option>
+              <option value="100" selected>100頭</option>
+              <option value="200">200頭</option>
+              <option value="300">300頭</option>
+            </select>
+          </th>
+          <th>☑</th>
+          <th>
+            捕獲数<br />
+            <select id="capGoal" onchange="updateGoal('cap')">
+              <option value="0">0頭</option>
+              <option value="100" selected>100頭</option>
+              <option value="200">200頭</option>
+              <option value="300">300頭</option>
+            </select>
+          </th>
+          <th>☑</th>
+        </tr>
       </thead>
       <tbody></tbody>
     </table>
@@ -52,7 +75,7 @@
     <button class="add-button" onclick="addRow()">＋ 行を追加</button>
 
     <div class="progress-container">
-      達成率：<span id="progress-text">0%</span><br>
+      達成率：<span id="progress-text">0%</span><br />
       <progress id="progress" value="0" max="100"></progress>
     </div>
   </div>
@@ -73,73 +96,134 @@
       "セルレギオス","ラギアクルス"
     ];
 
+    // 頭数目標（狩猟、捕獲）を保存
+    let goals = JSON.parse(localStorage.getItem('mhGoals')) || {hunt: 100, cap: 100};
+    // チェックリストデータ
     let data = JSON.parse(localStorage.getItem('mhChecklist')) || [];
 
-    function save() { localStorage.setItem('mhChecklist', JSON.stringify(data)); }
-
-    function updateProgress() {
-      const total = data.length * 2;
-      const checked = data.reduce((s,i)=>s+(i.hunted?1:0)+(i.captured?1:0), 0);
-      const pct = total ? Math.round(checked/total*100) : 0;
-      progressBar.value = pct; progressText.textContent = pct + "%";
+    // データ保存
+    function save() {
+      localStorage.setItem('mhChecklist', JSON.stringify(data));
+      localStorage.setItem('mhGoals', JSON.stringify(goals));
     }
 
+    // 進捗更新
+    function updateProgress() {
+      const total = data.length * 2;
+      const checked = data.reduce((sum, item) => sum + (item.hunted ? 1 : 0) + (item.captured ? 1 : 0), 0);
+      const pct = total ? Math.round((checked / total) * 100) : 0;
+      progressBar.value = pct;
+      progressText.textContent = pct + "%";
+    }
+
+    // 描画
     function render() {
-      tbody.innerHTML = '';
-      data.forEach((item,i)=>{
+      tbody.innerHTML = "";
+      data.forEach((item, i) => {
         const tr = document.createElement('tr');
         tr.className = 'striped';
         tr.dataset.index = i;
+
+        // モンスター名（編集可能）
         const tdName = document.createElement('td');
         tdName.textContent = item.name;
         tdName.contentEditable = true;
-        tdName.oninput = ()=>{ item.name = tdName.textContent.trim(); save(); };
-        const tdHuntLabel = document.createElement('td'); tdHuntLabel.textContent='狩猟';
-        const tdHunt = document.createElement('td');
-        const chH = document.createElement('input'); chH.type='checkbox'; chH.checked=item.hunted;
-        chH.onchange = ()=>{ item.hunted = chH.checked; save(); updateProgress(); };
-        tdHunt.appendChild(chH);
-        const tdCapLabel = document.createElement('td'); tdCapLabel.textContent='捕獲';
-        const tdCap = document.createElement('td');
-        const chC = document.createElement('input'); chC.type='checkbox'; chC.checked=item.captured;
-        chC.onchange = ()=>{ item.captured = chC.checked; save(); updateProgress(); };
-        tdCap.appendChild(chC);
-        tr.append(tdName, tdHuntLabel, tdHunt, tdCapLabel, tdCap);
+        tdName.oninput = () => {
+          item.name = tdName.textContent.trim();
+          save();
+        };
+        tr.appendChild(tdName);
+
+        // 狩猟数目標ラベル
+        const tdHuntLabel = document.createElement('td');
+        tdHuntLabel.textContent = goals.hunt + '頭';
+        tr.appendChild(tdHuntLabel);
+
+        // 狩猟チェック
+        const tdHuntCheck = document.createElement('td');
+        const chHunt = document.createElement('input');
+        chHunt.type = 'checkbox';
+        chHunt.checked = item.hunted;
+        chHunt.onchange = () => {
+          item.hunted = chHunt.checked;
+          save();
+          updateProgress();
+        };
+        tdHuntCheck.appendChild(chHunt);
+        tr.appendChild(tdHuntCheck);
+
+        // 捕獲数目標ラベル
+        const tdCapLabel = document.createElement('td');
+        tdCapLabel.textContent = goals.cap + '頭';
+        tr.appendChild(tdCapLabel);
+
+        // 捕獲チェック
+        const tdCapCheck = document.createElement('td');
+        const chCap = document.createElement('input');
+        chCap.type = 'checkbox';
+        chCap.checked = item.captured;
+        chCap.onchange = () => {
+          item.captured = chCap.checked;
+          save();
+          updateProgress();
+        };
+        tdCapCheck.appendChild(chCap);
+        tr.appendChild(tdCapCheck);
+
         tbody.appendChild(tr);
       });
       updateProgress();
     }
 
-    function addRow(){
-      data.push({name:'',hunted:false,captured:false});
-      save(); render();
+    // 行を追加
+    function addRow() {
+      data.push({name:'', hunted:false, captured:false});
+      save();
+      render();
       initSort();
     }
 
-    if(!data.length){
-      defaultNames.forEach(n=>data.push({name:n,hunted:false,captured:false}));
+    // 目標の更新
+    function updateGoal(type) {
+      const val = parseInt(document.getElementById(type === 'hunt' ? 'huntGoal' : 'capGoal').value, 10);
+      goals[type] = val;
       save();
+      render();
     }
-    render();
 
+    // 並べ替え処理
     let sortable = null;
-    function initSort(){
+    function initSort() {
       if(sortable) sortable.destroy();
       if(enableSortCheckbox.checked){
         sortable = Sortable.create(tbody, {
           animation: 150,
-          onEnd: e=>{
+          onEnd: e => {
             const [moved] = data.splice(e.oldIndex, 1);
-            data.splice(e.newIndex,0,moved);
-            save(); render();
+            data.splice(e.newIndex, 0, moved);
+            save();
+            render();
           }
         });
       }
     }
-    enableSortCheckbox.onchange = ()=>{ initSort(); };
 
-    // 初回初期化
-    initSort();
+    enableSortCheckbox.onchange = () => {
+      initSort();
+    };
+
+    // 初期化
+    if(!data.length){
+      defaultNames.forEach(name => data.push({name, hunted:false, captured:false}));
+      save();
+    }
+    window.onload = () => {
+      // 目標値復元
+      document.getElementById('huntGoal').value = goals.hunt;
+      document.getElementById('capGoal').value = goals.cap;
+      render();
+      initSort();
+    };
   </script>
 </body>
 </html>
