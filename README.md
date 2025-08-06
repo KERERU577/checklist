@@ -1,4 +1,5 @@
-# checklist<!DOCTYPE html>
+# checklist
+<!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
