@@ -37,7 +37,7 @@
 </head>
 <body>
   <div class="container">
-    <h1>MHWildsやり込みリスト</h1>
+    <h1>MHWildsの狩猟＆捕獲数100頭盛り</h1>
     <div class="options">
       <label><input type="checkbox" id="enableSort"> 並べ替えを有効にする</label>
     </div>
