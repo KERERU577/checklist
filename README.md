@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>MHWildsやり込みリスト</title>
+  <title>MHWildsの狩猟＆捕獲数100頭盛り</title>
   <style>
     body { font-family: 'Helvetica Neue', sans-serif; background: #f9f9f9; padding: 2rem; margin: 0; }
     .container { max-width: 900px; margin: 0 auto; background: #fff; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
