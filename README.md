@@ -100,6 +100,7 @@
       <progress id="progress" value="0" max="100"></progress>
     </div>
   </div>
+
   <script>
     const checklistBody = document.querySelector('#checklist tbody');
     const progressBar = document.getElementById('progress');
@@ -135,7 +136,7 @@
 
         // モンスター名
         const nameTd = document.createElement('td');
-        nameTd.textContent = item.name || `モンスター ${index + 1}`;
+        nameTd.textContent = item.name;
         nameTd.contentEditable = true;
         nameTd.oninput = () => {
           data[index].name = nameTd.textContent.trim();
@@ -192,6 +193,7 @@
       render();
     }
 
+    // 初回のみデフォルトモンスター名で初期化
     if (data.length === 0) {
       defaultNames.forEach(name => {
         data.push({ name: name, hunted: false, captured: false });
