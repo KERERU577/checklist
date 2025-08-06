@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>MHクラウン風チェックリスト</title>
+  <title>MHWildsやり込みリスト</title>
   <style>
     body {
       font-family: 'Helvetica Neue', sans-serif;
@@ -58,12 +58,6 @@
       outline: 2px dashed #4CAF50;
     }
 
-    .actions {
-      display: flex;
-      gap: 0.5rem;
-      margin-left: 10px;
-    }
-
     button {
       padding: 4px 10px;
       border: none;
@@ -77,11 +71,6 @@
       color: white;
     }
 
-    .delete-button {
-      background: #ff4c4c;
-      color: white;
-    }
-
     .check-label {
       font-size: 0.8em;
       color: #777;
@@ -91,7 +80,7 @@
 </head>
 <body>
   <div class="container">
-    <h1>MHクラウン風チェックリスト</h1>
+    <h1>MHWildsやり込みリスト</h1>
 
     <div class="progress-container">
       <label>達成率：<span id="progress-text">0%</span></label>
@@ -107,6 +96,15 @@
     const checklist = document.getElementById('checklist');
     const progressBar = document.getElementById('progress');
     const progressText = document.getElementById('progress-text');
+
+    const defaultNames = [
+      "チャタカブラ","ケマトリス","ラバナ・バリナ","ババコンガ","バーラハーラ","ドシャグマ",
+      "ウズ・トゥナ","ププロポル","レ・ダウ","ネルスキュラ","ヒラバミ","アジャラカン",
+      "ヌ・エグドラ","護竜ドシャグマ","護竜リオレウス","ジン・ダハド","護竜オドガロン亜種","シーウー",
+      "護竜アルシュベルド","ゾ・シア","イャンクック","ゲリョス","リオレイア","護竜アンジャナフ亜種",
+      "リオレウス","グラビモス","ドドブランゴ","ゴア・マガラ","アルシュベルド","タマミツネ",
+      "セルレギオス","ラギアクルス"
+    ];
 
     let data = JSON.parse(localStorage.getItem('mhChecklist')) || [];
 
@@ -184,25 +182,8 @@
         checks.appendChild(labels);
         checks.appendChild(checkWrapper);
 
-        const actions = document.createElement('div');
-        actions.className = 'actions';
-
-        const deleteBtn = document.createElement('button');
-        deleteBtn.className = 'delete-button';
-        deleteBtn.textContent = '🗑️';
-        deleteBtn.onclick = () => {
-          if (confirm('この行を削除しますか？')) {
-            data.splice(index, 1);
-            saveData();
-            render();
-          }
-        };
-
-        actions.appendChild(deleteBtn);
-
         row.appendChild(label);
         row.appendChild(checks);
-        row.appendChild(actions);
 
         checklist.appendChild(row);
       });
@@ -216,11 +197,11 @@
       render();
     }
 
-    // 初期データが空なら32行追加
+    // 初回読み込み時に32体の名前を設定
     if (data.length === 0) {
-      for (let i = 1; i <= 32; i++) {
-        data.push({ name: `モンスター ${i}`, hunted: false, captured: false });
-      }
+      defaultNames.forEach(name => {
+        data.push({ name: name, hunted: false, captured: false });
+      });
       saveData();
     }
 
