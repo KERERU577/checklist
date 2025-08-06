@@ -7,27 +7,53 @@
   <style>
     body {
       font-family: 'Helvetica Neue', sans-serif;
-      background: #f2f2f2;
-      margin: 0;
+      background: #f9f9f9;
       padding: 2rem;
+      margin: 0;
     }
 
     .container {
-      max-width: 800px;
+      max-width: 900px;
       margin: 0 auto;
-      background: white;
+      background: #fff;
+      padding: 2rem;
       border-radius: 12px;
-      padding: 1rem 2rem 2rem;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     }
 
     h1 {
       text-align: center;
-      margin-bottom: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 1.5rem;
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 0.5rem;
+      text-align: center;
+    }
+
+    th {
+      background-color: #eee;
+    }
+
+    td[contenteditable]:focus {
+      outline: 2px dashed #4CAF50;
+    }
+
+    input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      accent-color: #4CAF50;
     }
 
     .progress-container {
-      margin-bottom: 1.5rem;
+      margin-top: 1rem;
     }
 
     progress {
@@ -35,46 +61,16 @@
       height: 20px;
     }
 
-    .row {
-      display: flex;
-      align-items: center;
-      border-bottom: 1px solid #eee;
-      padding: 0.5rem 0;
-    }
-
-    .row input[type="checkbox"] {
-      width: 20px;
-      height: 20px;
-      accent-color: #4CAF50;
-      margin: 0 10px;
-    }
-
-    .label {
-      flex: 1;
-      cursor: pointer;
-    }
-
-    .label[contenteditable]:focus {
-      outline: 2px dashed #4CAF50;
-    }
-
-    button {
-      padding: 4px 10px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-
     .add-button {
-      margin-top: 1rem;
-      background: #4CAF50;
+      display: inline-block;
+      padding: 0.5rem 1rem;
+      background-color: #4CAF50;
       color: white;
-    }
-
-    .check-label {
-      font-size: 0.8em;
-      color: #777;
-      text-align: center;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 1rem;
+      margin-top: 1rem;
     }
   </style>
 </head>
@@ -82,18 +78,30 @@
   <div class="container">
     <h1>MHWildsやり込みリスト</h1>
 
+    <table id="checklist">
+      <thead>
+        <tr>
+          <th>モンスター名</th>
+          <th>狩猟数</th>
+          <th>狩猟 ☑</th>
+          <th>捕獲数</th>
+          <th>捕獲 ☑</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- 行はJSで生成 -->
+      </tbody>
+    </table>
+
+    <button class="add-button" onclick="addRow()">＋ 行を追加</button>
+
     <div class="progress-container">
       <label>達成率：<span id="progress-text">0%</span></label>
       <progress id="progress" value="0" max="100"></progress>
     </div>
-
-    <div id="checklist"></div>
-
-    <button class="add-button" onclick="addRow()">＋ 行を追加</button>
   </div>
-
   <script>
-    const checklist = document.getElementById('checklist');
+    const checklistBody = document.querySelector('#checklist tbody');
     const progressBar = document.getElementById('progress');
     const progressText = document.getElementById('progress-text');
 
@@ -113,79 +121,66 @@
     }
 
     function updateProgress() {
-      const totalChecks = data.length * 2;
-      const checked = data.reduce((acc, row) => acc + (row.hunted ? 1 : 0) + (row.captured ? 1 : 0), 0);
-      const percent = totalChecks ? Math.round((checked / totalChecks) * 100) : 0;
+      const total = data.length * 2;
+      const checked = data.reduce((sum, item) => sum + (item.hunted ? 1 : 0) + (item.captured ? 1 : 0), 0);
+      const percent = total ? Math.round((checked / total) * 100) : 0;
       progressBar.value = percent;
-      progressText.textContent = percent + '%';
+      progressText.textContent = percent + "%";
     }
 
     function render() {
-      checklist.innerHTML = '';
+      checklistBody.innerHTML = '';
       data.forEach((item, index) => {
-        const row = document.createElement('div');
-        row.className = 'row';
+        const tr = document.createElement('tr');
 
-        const label = document.createElement('div');
-        label.className = 'label';
-        label.textContent = item.name || `モンスター ${index + 1}`;
-        label.contentEditable = true;
-        label.oninput = () => {
-          data[index].name = label.textContent.trim();
+        // モンスター名
+        const nameTd = document.createElement('td');
+        nameTd.textContent = item.name || `モンスター ${index + 1}`;
+        nameTd.contentEditable = true;
+        nameTd.oninput = () => {
+          data[index].name = nameTd.textContent.trim();
           saveData();
         };
 
-        const checks = document.createElement('div');
-        checks.style.display = 'flex';
-        checks.style.alignItems = 'center';
+        // 狩猟ラベル
+        const huntLabelTd = document.createElement('td');
+        huntLabelTd.textContent = '狩猟';
 
-        const huntCheck = document.createElement('input');
-        huntCheck.type = 'checkbox';
-        huntCheck.checked = item.hunted;
-        huntCheck.onchange = () => {
-          data[index].hunted = huntCheck.checked;
-          saveData();
-          updateProgress();
-        };
-
-        const captureCheck = document.createElement('input');
-        captureCheck.type = 'checkbox';
-        captureCheck.checked = item.captured;
-        captureCheck.onchange = () => {
-          data[index].captured = captureCheck.checked;
+        // 狩猟チェック
+        const huntTd = document.createElement('td');
+        const huntCheckbox = document.createElement('input');
+        huntCheckbox.type = 'checkbox';
+        huntCheckbox.checked = item.hunted;
+        huntCheckbox.onchange = () => {
+          data[index].hunted = huntCheckbox.checked;
           saveData();
           updateProgress();
         };
+        huntTd.appendChild(huntCheckbox);
 
-        const labels = document.createElement('div');
-        labels.style.display = 'flex';
-        labels.style.flexDirection = 'column';
-        labels.style.marginRight = '8px';
+        // 捕獲ラベル
+        const capLabelTd = document.createElement('td');
+        capLabelTd.textContent = '捕獲';
 
-        const huntLabel = document.createElement('div');
-        huntLabel.className = 'check-label';
-        huntLabel.textContent = '狩猟';
+        // 捕獲チェック
+        const capTd = document.createElement('td');
+        const capCheckbox = document.createElement('input');
+        capCheckbox.type = 'checkbox';
+        capCheckbox.checked = item.captured;
+        capCheckbox.onchange = () => {
+          data[index].captured = capCheckbox.checked;
+          saveData();
+          updateProgress();
+        };
+        capTd.appendChild(capCheckbox);
 
-        const capLabel = document.createElement('div');
-        capLabel.className = 'check-label';
-        capLabel.textContent = '捕獲';
-
-        labels.appendChild(huntLabel);
-        labels.appendChild(capLabel);
-
-        const checkWrapper = document.createElement('div');
-        checkWrapper.style.display = 'flex';
-        checkWrapper.style.flexDirection = 'column';
-        checkWrapper.appendChild(huntCheck);
-        checkWrapper.appendChild(captureCheck);
-
-        checks.appendChild(labels);
-        checks.appendChild(checkWrapper);
-
-        row.appendChild(label);
-        row.appendChild(checks);
-
-        checklist.appendChild(row);
+        // Append all
+        tr.appendChild(nameTd);
+        tr.appendChild(huntLabelTd);
+        tr.appendChild(huntTd);
+        tr.appendChild(capLabelTd);
+        tr.appendChild(capTd);
+        checklistBody.appendChild(tr);
       });
 
       updateProgress();
@@ -197,7 +192,6 @@
       render();
     }
 
-    // 初回読み込み時に32体の名前を設定
     if (data.length === 0) {
       defaultNames.forEach(name => {
         data.push({ name: name, hunted: false, captured: false });
