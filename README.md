@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>チェックリスト</title>
+  <title>個人的なやり込みリスト</title>
   <style>
     body {
       font-family: 'Helvetica Neue', sans-serif;
@@ -49,7 +49,7 @@
   </style>
 </head>
 <body>
-  <h1>MHクラウン風 チェックリスト</h1>
+  <h1>狩猟数＆捕獲数100頭盛り チェックリスト</h1>
   <div class="container">
     <!-- 32行分 -->
     <!-- 1行 -->
