@@ -25,6 +25,7 @@
     }
     .options {
       margin-bottom: 1rem;
+      text-align: center;
     }
     table {
       width: 100%;
@@ -50,16 +51,25 @@
     select {
       width: 80px;
     }
-
-    /* 6行ごとに背景色を交互に変える */
-    .group-1 { background-color: #fdfdfd; }
-    .group-2 { background-color: #f7f7f7; }
-
-    /* 太線 */
-    .tr-divider td {
-      border-top: 3px solid #666 !important;
+    tr:nth-child(6n+1),
+    tr:nth-child(6n+2),
+    tr:nth-child(6n+3),
+    tr:nth-child(6n+4),
+    tr:nth-child(6n+5),
+    tr:nth-child(6n+6) {
+      background-color: #fdfdfd;
     }
-
+    tr:nth-child(6n+7),
+    tr:nth-child(6n+8),
+    tr:nth-child(6n+9),
+    tr:nth-child(6n+10),
+    tr:nth-child(6n+11),
+    tr:nth-child(6n+12) {
+      background-color: #f7f7f7;
+    }
+    tr.thick-border {
+      border-bottom: 3px solid #999;
+    }
     .progress-container {
       margin-top: 1rem;
     }
@@ -83,6 +93,7 @@
 <body>
   <div class="container">
     <h1>MHWildsの狩猟＆捕獲数100頭盛り</h1>
+
     <div class="options">
       <label><input type="checkbox" id="enableSort"> 並べ替えを有効にする</label>
     </div>
@@ -149,11 +160,15 @@
     }
 
     function updateProgress() {
-      const total = data.length * 2;
-      const checked = data.reduce((sum, item) => sum + (item.hunted ? 1 : 0) + (item.captured ? 1 : 0), 0);
+      const total = data.reduce((sum, item) => sum + 1 + (isSpecialMonster(item.name) ? 0 : 1), 0);
+      const checked = data.reduce((sum, item) => sum + (item.hunted ? 1 : 0) + (item.captured && !isSpecialMonster(item.name) ? 1 : 0), 0);
       const pct = total ? Math.round((checked / total) * 100) : 0;
       progressBar.value = pct;
       progressText.textContent = pct + "%";
+    }
+
+    function isSpecialMonster(name) {
+      return ["ジン・ダハド", "護竜アルシュベルド", "ゾ・シア"].includes(name);
     }
 
     function render() {
@@ -162,12 +177,15 @@
         const tr = document.createElement('tr');
         tr.dataset.index = i;
 
-        // 6行ごとに背景色交互
-        tr.classList.add((Math.floor(i / 6) % 2 === 0) ? 'group-1' : 'group-2');
-
-        // 指定行の後に太線を引く
-        if ([6,12,18,24,30].includes(i)) {
-          tr.classList.add('tr-divider');
+        // 特定の行に太線を追加
+        if (
+          item.name === "ドシャグマ" ||
+          item.name === "アジャラカン" ||
+          item.name === "シーウー" ||
+          item.name === "護竜アンジャナフ亜種" ||
+          item.name === "タマミツネ"
+        ) {
+          tr.classList.add('thick-border');
         }
 
         const tdName = document.createElement('td');
@@ -195,20 +213,26 @@
         tdHuntCheck.appendChild(chHunt);
         tr.appendChild(tdHuntCheck);
 
+        const isSpecial = isSpecialMonster(item.name);
+
         const tdCapLabel = document.createElement('td');
-        tdCapLabel.textContent = goals.cap + '頭';
+        tdCapLabel.textContent = isSpecial ? '/' : goals.cap + '頭';
         tr.appendChild(tdCapLabel);
 
         const tdCapCheck = document.createElement('td');
-        const chCap = document.createElement('input');
-        chCap.type = 'checkbox';
-        chCap.checked = item.captured;
-        chCap.onchange = () => {
-          item.captured = chCap.checked;
-          save();
-          updateProgress();
-        };
-        tdCapCheck.appendChild(chCap);
+        if (isSpecial) {
+          tdCapCheck.textContent = '/';
+        } else {
+          const chCap = document.createElement('input');
+          chCap.type = 'checkbox';
+          chCap.checked = item.captured;
+          chCap.onchange = () => {
+            item.captured = chCap.checked;
+            save();
+            updateProgress();
+          };
+          tdCapCheck.appendChild(chCap);
+        }
         tr.appendChild(tdCapCheck);
 
         tbody.appendChild(tr);
