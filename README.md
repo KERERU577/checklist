@@ -7,30 +7,17 @@
   <style>
     body { font-family: 'Helvetica Neue', sans-serif; background: #f9f9f9; padding: 2rem; margin: 0; }
     .container { max-width: 900px; margin: 0 auto; background: #fff; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-    h1 { text-align: center; margin-bottom: 1rem; }
-    .options { margin-bottom: 1rem; }
+    h1 { text-align: center; margin-bottom: 1rem; font-size: 1.8rem; }
+    .options { margin-bottom: 1rem; text-align: center; }
     table { width: 100%; border-collapse: collapse; margin-bottom: 1.5rem; }
     th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: center; }
     th { background-color: #eee; }
     td[contenteditable]:focus { outline: 2px dashed #4CAF50; }
     input[type="checkbox"] { width:20px;height:20px; accent-color:#4CAF50; }
     select { width: 80px; }
-    .striped:nth-child(6n+1),
-    .striped:nth-child(6n+2),
-    .striped:nth-child(6n+3),
-    .striped:nth-child(6n+4),
-    .striped:nth-child(6n+5),
-    .striped:nth-child(6n+6) {
-      background-color: #fdfdfd;
-    }
-    .striped:nth-child(6n+7),
-    .striped:nth-child(6n+8),
-    .striped:nth-child(6n+9),
-    .striped:nth-child(6n+10),
-    .striped:nth-child(6n+11),
-    .striped:nth-child(6n+12) {
-      background-color: #f7f7f7;
-    }
+    .group-even { background-color: #ffffff; }
+    .group-odd  { background-color: #f1f1f1; }
+    .tr-divider { border-top: 4px solid #999 !important; }
     .progress-container { margin-top: 1rem; }
     progress { width:100%; height:20px; }
     .add-button { display:inline-block; padding:0.5rem 1rem; background:#4CAF50; color:#fff; border:none; border-radius:6px; cursor:pointer; font-size:1rem; margin-bottom:1rem; }
@@ -96,18 +83,14 @@
       "セルレギオス","ラギアクルス"
     ];
 
-    // 頭数目標（狩猟、捕獲）を保存
     let goals = JSON.parse(localStorage.getItem('mhGoals')) || {hunt: 100, cap: 100};
-    // チェックリストデータ
     let data = JSON.parse(localStorage.getItem('mhChecklist')) || [];
 
-    // データ保存
     function save() {
       localStorage.setItem('mhChecklist', JSON.stringify(data));
       localStorage.setItem('mhGoals', JSON.stringify(goals));
     }
 
-    // 進捗更新
     function updateProgress() {
       const total = data.length * 2;
       const checked = data.reduce((sum, item) => sum + (item.hunted ? 1 : 0) + (item.captured ? 1 : 0), 0);
@@ -116,15 +99,21 @@
       progressText.textContent = pct + "%";
     }
 
-    // 描画
     function render() {
       tbody.innerHTML = "";
       data.forEach((item, i) => {
         const tr = document.createElement('tr');
-        tr.className = 'striped';
+
+        const groupIndex = Math.floor(i / 6);
+        tr.classList.add(groupIndex % 2 === 0 ? 'group-even' : 'group-odd');
+
+        // ドシャグマとウズ・トゥナ間に太線
+        if (i === 6) {
+          tr.classList.add('tr-divider');
+        }
+
         tr.dataset.index = i;
 
-        // モンスター名（編集可能）
         const tdName = document.createElement('td');
         tdName.textContent = item.name;
         tdName.contentEditable = true;
@@ -134,12 +123,10 @@
         };
         tr.appendChild(tdName);
 
-        // 狩猟数目標ラベル
         const tdHuntLabel = document.createElement('td');
         tdHuntLabel.textContent = goals.hunt + '頭';
         tr.appendChild(tdHuntLabel);
 
-        // 狩猟チェック
         const tdHuntCheck = document.createElement('td');
         const chHunt = document.createElement('input');
         chHunt.type = 'checkbox';
@@ -152,12 +139,10 @@
         tdHuntCheck.appendChild(chHunt);
         tr.appendChild(tdHuntCheck);
 
-        // 捕獲数目標ラベル
         const tdCapLabel = document.createElement('td');
         tdCapLabel.textContent = goals.cap + '頭';
         tr.appendChild(tdCapLabel);
 
-        // 捕獲チェック
         const tdCapCheck = document.createElement('td');
         const chCap = document.createElement('input');
         chCap.type = 'checkbox';
@@ -175,7 +160,6 @@
       updateProgress();
     }
 
-    // 行を追加
     function addRow() {
       data.push({name:'', hunted:false, captured:false});
       save();
@@ -183,7 +167,6 @@
       initSort();
     }
 
-    // 目標の更新
     function updateGoal(type) {
       const val = parseInt(document.getElementById(type === 'hunt' ? 'huntGoal' : 'capGoal').value, 10);
       goals[type] = val;
@@ -191,7 +174,6 @@
       render();
     }
 
-    // 並べ替え処理
     let sortable = null;
     function initSort() {
       if(sortable) sortable.destroy();
@@ -212,13 +194,12 @@
       initSort();
     };
 
-    // 初期化
     if(!data.length){
       defaultNames.forEach(name => data.push({name, hunted:false, captured:false}));
       save();
     }
+
     window.onload = () => {
-      // 目標値復元
       document.getElementById('huntGoal').value = goals.hunt;
       document.getElementById('capGoal').value = goals.cap;
       render();
